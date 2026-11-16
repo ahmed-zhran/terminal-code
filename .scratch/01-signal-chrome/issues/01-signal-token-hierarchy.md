@@ -1,7 +1,7 @@
 # 01: Signal token hierarchy
 
 **Base:** spec/01
-**Status:** ready-for-agent
+**Status:** claimed
 **Blocked by:** none
 **Surfaces:** terminal-code
 
