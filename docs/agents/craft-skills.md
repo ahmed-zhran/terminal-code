@@ -2,9 +2,9 @@
 
 Approved coding-craft router for this repo. `/implement` and `ticket-flow` read **only** this file before writing product code.
 
-These skills fill the gap in the **coding itself** (framework, UI craft, mobile, backend architecture). They are not before-code gates and not after-code gates: `tdd`, typecheck, and `code-review` stay in the implement flow.
+These skills fill the gap in the **coding itself**. They are not before-code gates and not after-code gates: `tdd`, typecheck, and `code-review` stay in the implement flow.
 
-Written by `/empower-crafting` after you approve its proposal table. To change it, re-run that skill (it reads `craft-skills-draft.md` and your stack/architecture docs). Do not hand-merge the draft into this file. `/sync-skills` never overwrites this file.
+Written by `/empower-crafting` after approval. To change it, re-run that skill. `/sync-skills` never overwrites this file.
 
 **Rules**
 
@@ -13,7 +13,8 @@ Written by `/empower-crafting` after you approve its proposal table. To change i
 
 | When the work is… | Call these skills (in order) | Why |
 | --- | --- | --- |
-| Frontend **UI / visual design** | `design-taste-frontend` | Package default ui-taste until `/empower-crafting` revises this table |
-| **Module / interface design** inside a surface | `codebase-design` | Package default module-design |
+| Chrome / Signal / Markdown **visual polish** | `design-taste-frontend` | Design-first ui-taste winner for OpenTUI shell and document-mode polish |
+| Layout / composition in the TUI shell (after taste) | `frontend-design` | Composes with ui-taste for hierarchy and pane composition; not a second taste skill |
+| Module / seam design while reshaping chrome | `codebase-design` | Deep-module vocabulary when shell seams move |
 
 After craft skills: continue the implement flow (`tdd` at seams, typecheck/tests, then `code-review`).
