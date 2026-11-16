@@ -66,7 +66,7 @@ Single-context: root `GLOSSARY.md` and `docs/adr/`. See `docs/agents/domain.md`.
 
 ### Branching
 
-Default base `main` until a release is open; review mode `required`. Every issue carries a `**Base:**` line; work never assumes `main`. See `docs/agents/branching.md`.
+Default base `release/1` (open design-quality cycle); review mode `required`. Every issue carries a `**Base:**` line; work never assumes `main`. See `docs/agents/branching.md`.
 
 ### Craft skills
 
