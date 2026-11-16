@@ -1,0 +1,23 @@
+{
+  "name": "terminal-code",
+  "description": "A VS Code-style file explorer and editor for the terminal, built with OpenTUI.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun src/index.tsx",
+    "typecheck": "bun check src/index.tsx",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.3.0"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.8.3",
+    "@opentui/react": "^0.8.3",
+    "react": "^19.3.1"
+  }
+}
