@@ -1,7 +1,7 @@
 # 02: Chrome composition polish
 
 **Base:** spec/01
-**Status:** ready-for-agent
+**Status:** claimed
 **Blocked by:** 01
 **Surfaces:** terminal-code
 

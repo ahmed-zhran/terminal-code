@@ -1019,7 +1019,8 @@ export function App({
               openPaths.map((path) => {
                 const buffer = buffers.current.get(path)
                 const active = path === activePath
-                const label = ` ${basename(path)}${buffer?.dirty ? " ●" : ""}${active && showingPreview ? " ▸" : ""} `
+                const name = basename(path)
+                const tabLabelFg = active ? theme.tabFg : theme.tabInactiveFg
                 return (
                   <box
                     key={path}
@@ -1037,7 +1038,10 @@ export function App({
                     onMouseOut={() => point("default")}
                   >
                     {active ? <text fg={theme.tabMark}>▎</text> : <text fg={theme.tabInactive}> </text>}
-                    <text fg={active ? theme.tabFg : theme.tabInactiveFg}>{label}</text>
+                    <text fg={tabLabelFg}>{` ${name}`}</text>
+                    {buffer?.dirty ? <text fg={theme.dirty}> ●</text> : null}
+                    {active && showingPreview ? <text fg={theme.tabFg}> ▸</text> : null}
+                    <text fg={tabLabelFg}> </text>
                   </box>
                 )
               })
@@ -1242,7 +1246,7 @@ function WelcomePane({
   workspace: string
 }) {
   const lines = [
-    { text: "TERMINAL·CODE", fg: theme.brand },
+    { text: "▎ TERMINAL·CODE", fg: theme.titleFg },
     { text: "──────────────", fg: theme.divider },
     { text: workspace, fg: theme.emptyFg },
     { text: "", fg: theme.emptyDim },
@@ -1295,7 +1299,7 @@ function ActivityIcon({
       {...hover}
     >
       <box width={1} height={1} flexShrink={0} backgroundColor={active ? theme.accent : theme.activityBg} />
-      <text fg={active ? theme.brand : theme.listDim}>{` ${mark}`}</text>
+      <text fg={active ? theme.brand : theme.activityMuted}>{` ${mark}`}</text>
     </box>
   )
 }
