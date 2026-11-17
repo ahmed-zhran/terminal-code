@@ -15,6 +15,7 @@ export type Theme = {
   sidebarBg: string
   activityBg: string
   activityActive: string
+  activityMuted: string
   accent: string
   brand: string
   titleFg: string
@@ -52,14 +53,15 @@ export type Theme = {
 }
 
 function theme(
-  partial: Omit<Theme, "brand" | "tabMark" | "statusMuted" | "emptyFg" | "emptyDim"> &
-    Partial<Pick<Theme, "brand" | "tabMark" | "statusMuted" | "emptyFg" | "emptyDim">>,
+  partial: Omit<Theme, "brand" | "tabMark" | "statusMuted" | "activityMuted" | "emptyFg" | "emptyDim"> &
+    Partial<Pick<Theme, "brand" | "tabMark" | "statusMuted" | "activityMuted" | "emptyFg" | "emptyDim">>,
 ): Theme {
   return {
     ...partial,
     brand: partial.brand ?? partial.accent,
     tabMark: partial.tabMark ?? partial.accent,
     statusMuted: partial.statusMuted ?? partial.listDim,
+    activityMuted: partial.activityMuted ?? partial.listDim,
     emptyFg: partial.emptyFg ?? partial.listFg,
     emptyDim: partial.emptyDim ?? partial.listDim,
   }
@@ -69,35 +71,38 @@ export const themes: Record<ThemeName, Theme> = {
   signal: theme({
     name: "signal",
     label: "Signal",
-    editorBg: "#0B0F14",
-    sidebarBg: "#0F141B",
-    activityBg: "#070A0E",
-    activityActive: "#15202B",
+    // Depth ladder (darkest → most readable): activity rail → sidebar → editor chrome → content.
+    // Composition: active chrome steps forward; status stays quieter than editor text.
+    editorBg: "#141C26",
+    sidebarBg: "#0C131B",
+    activityBg: "#030508",
+    activityActive: "#0E1A24",
+    activityMuted: "#455566",
     accent: "#3DDC97",
     brand: "#5EEAD4",
     titleFg: "#5EEAD4",
     listFg: "#D7E0EA",
     listDim: "#6B7C8F",
     listActive: "#143528",
-    listInactive: "#1A2430",
-    listHover: "#121A22",
-    tabBar: "#0A0E13",
-    tabActive: "#0B0F14",
-    tabInactive: "#10161E",
+    listInactive: "#121A22",
+    listHover: "#0F171F",
+    tabBar: "#101820",
+    tabActive: "#141C26",
+    tabInactive: "#0A1017",
     tabFg: "#E8EEF5",
-    tabInactiveFg: "#6B7C8F",
+    tabInactiveFg: "#5A6B7D",
     tabMark: "#3DDC97",
-    statusBg: "#10231C",
-    statusFg: "#D7F5E8",
-    statusSegment: "#163A2C",
-    statusMuted: "#7AA892",
-    divider: "#1C2834",
-    editorText: "#E6EDF5",
+    statusBg: "#0B1612",
+    statusFg: "#A8D4C0",
+    statusSegment: "#143328",
+    statusMuted: "#6F9080",
+    divider: "#182430",
+    editorText: "#E8EEF5",
     cursor: "#5EEAD4",
     selection: "#1B3A48",
     dirty: "#F0C674",
     inputBg: "#15202B",
-    emptyFg: "#E6EDF5",
+    emptyFg: "#E8EEF5",
     emptyDim: "#6B7C8F",
     git: {
       conflict: "#F87171",

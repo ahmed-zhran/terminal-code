@@ -1,7 +1,7 @@
 # 01: Signal token hierarchy
 
 **Base:** spec/01
-**Status:** ready-for-agent
+**Status:** done
 **Blocked by:** none
 **Surfaces:** terminal-code
 
@@ -22,3 +22,5 @@ Opening the app on Signal shows an obvious ink/mint hierarchy without new widget
 - `bun test` and `bun check` pass
 
 ## Comments
+
+- Landed into `spec/01` via https://github.com/ahmed-zhran/terminal-code/pull/1
