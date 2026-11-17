@@ -1,7 +1,7 @@
 # 02: Preview content-first layout
 
 **Base:** spec/02
-**Status:** ready-for-agent
+**Status:** claimed
 **Blocked by:** 01
 **Surfaces:** terminal-code
 
@@ -22,3 +22,5 @@ Preview feels like a first-class document mode, not a bolted-on panel, consisten
 - `bun test` and `bun check` pass
 
 ## Comments
+
+- Document mode policy: **reset to Source** when the active path changes (leave/return a Markdown tab). Preview is not sticky across tabs; returning always opens Source.

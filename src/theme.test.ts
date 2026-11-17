@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import { DEFAULT_KEYS } from "./settings.ts"
-import { themes, themeOrder, type Theme } from "./theme.ts"
+import { documentModeSegment, themes, themeOrder, type Theme } from "./theme.ts"
 
 function rgbChannels(hex: string): [number, number, number] {
   const n = hex.replace("#", "")
@@ -117,6 +117,33 @@ test("Signal status bar stays secondary to editor content", () => {
   expect(luminance(signal.statusBg)).toBeLessThan(luminance(signal.editorBg))
 })
 
+test("Signal Preview body uses content-first contrast over editor chrome", () => {
+  const signal = themes.signal
+  const body = contrast(signal.previewFg, signal.previewBg)
+  const tabChrome = contrast(signal.tabFg, signal.tabBar)
+  const status = contrast(signal.statusFg, signal.statusBg)
+  const modeQuiet = contrast(signal.previewChromeFg, signal.tabBar)
+  expect(body).toBeGreaterThanOrEqual(10)
+  expect(body).toBeGreaterThan(tabChrome)
+  expect(body).toBeGreaterThan(status)
+  expect(body).toBeGreaterThan(modeQuiet * 2)
+  expect(luminance(signal.previewBg)).toBeGreaterThanOrEqual(luminance(signal.tabBar))
+})
+
+test("Signal Preview-active chrome stays secondary to the Preview body", () => {
+  const signal = themes.signal
+  const body = contrast(signal.previewFg, signal.previewBg)
+  const quietMode = documentModeSegment(signal, true, true)
+  const loudSourceMode = documentModeSegment(signal, false, true)
+  const quietTab = contrast(signal.statusFg, signal.tabActive)
+  const quietInactiveTab = contrast(signal.previewChromeFg, signal.tabInactive)
+  expect(contrast(quietMode.fg, quietMode.bg)).toBeLessThan(body / 2)
+  expect(contrast(quietMode.fg, quietMode.bg)).toBeLessThan(contrast(loudSourceMode.fg, loudSourceMode.bg))
+  expect(luminance(quietMode.bg)).toBeLessThanOrEqual(luminance(signal.previewBg))
+  expect(quietTab).toBeLessThan(body)
+  expect(quietInactiveTab).toBeLessThan(body / 2)
+})
+
 test("Signal empty states share title and content language", () => {
   const signal = themes.signal
   expect(signal.emptyFg).toBe(signal.editorText)
@@ -139,6 +166,9 @@ test("every theme exposes the same chrome role tokens (Signal owns the depth lad
     expect(theme.brand).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.titleFg).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.editorText).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(theme.previewBg).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(theme.previewFg).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(theme.previewChromeFg).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.dirty).toMatch(/^#[0-9A-Fa-f]{6}$/)
   }
 })

@@ -5,8 +5,9 @@ import { basename, relative } from "node:path"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { TreeModel, buildExplorerRows, loadFile, type ExplorerRow } from "./files.ts"
 import { GIT_LETTER, checkoutBranch, listBranches, readGit, type GitMark } from "./git.ts"
-import { getSyntaxStyle, paintSyntax } from "./highlight.ts"
+import { getPreviewSyntaxStyle, paintSyntax } from "./highlight.ts"
 import { fileMark, folderMark, type IconTone } from "./icons.ts"
+import { documentModeAfterActivate } from "./document-mode.ts"
 import { isMarkdownPath } from "./markdown.ts"
 import { filesContaining, replaceLiteral, searchWorkspace, type SearchHit } from "./search.ts"
 import {
@@ -18,7 +19,7 @@ import {
   type Action,
   type Settings,
 } from "./settings.ts"
-import { themeOrder, themes, type Theme } from "./theme.ts"
+import { documentModeSegment, themeOrder, themes, type Theme } from "./theme.ts"
 
 const ACTIVITY = 4
 
@@ -322,6 +323,12 @@ export function App({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, view, root])
 
+  function activateEditorPath(path: string, text: string) {
+    setPreviewMode((wasPreview) => documentModeAfterActivate(activeRef.current, path, wasPreview ? "preview" : "source") === "preview")
+    setActivePath(path)
+    setMountText(text)
+  }
+
   async function openPath(path: string) {
     let buffer = buffers.current.get(path)
     if (!buffer) {
@@ -333,8 +340,7 @@ export function App({
       buffers.current.set(path, buffer)
     }
     setOpenPaths((prev) => (prev.includes(path) ? prev : [...prev, path]))
-    setActivePath(path)
-    setMountText(buffer.current)
+    activateEditorPath(path, buffer.current)
     setCursor({ line: 1, column: 1 })
     confirmClose.current = null
   }
@@ -409,9 +415,13 @@ export function App({
       const index = prev.indexOf(path)
       const next = prev.filter((item) => item !== path)
       const neighbor = next[index] ?? next[index - 1] ?? null
-      setActivePath(neighbor)
-      setMountText(neighbor ? (buffers.current.get(neighbor)?.current ?? "") : "")
-      if (!neighbor) setFocus("sidebar")
+      if (neighbor) activateEditorPath(neighbor, buffers.current.get(neighbor)?.current ?? "")
+      else {
+        setPreviewMode(false)
+        setActivePath(null)
+        setMountText("")
+        setFocus("sidebar")
+      }
       return next
     })
     setDirtyTick((value) => value + 1)
@@ -1020,7 +1030,12 @@ export function App({
           />
         ) : null}
 
-        <box width={editorWidth} height={bodyHeight} flexDirection="column" backgroundColor={theme.editorBg}>
+        <box
+          width={editorWidth}
+          height={bodyHeight}
+          flexDirection="column"
+          backgroundColor={showingPreview ? theme.previewBg : theme.editorBg}
+        >
           <box width={editorWidth} height={1} flexDirection="row" backgroundColor={theme.tabBar}>
             {openPaths.length === 0 ? (
               <box height={1} flexGrow={1} backgroundColor={theme.tabBar}>
@@ -1031,7 +1046,14 @@ export function App({
                 const buffer = buffers.current.get(path)
                 const active = path === activePath
                 const name = basename(path)
-                const tabLabelFg = active ? theme.tabFg : theme.tabInactiveFg
+                const tabLabelFg = showingPreview
+                  ? active
+                    ? theme.statusFg
+                    : theme.previewChromeFg
+                  : active
+                    ? theme.tabFg
+                    : theme.tabInactiveFg
+                const tabMarkFg = showingPreview ? theme.previewChromeFg : theme.tabMark
                 return (
                   <box
                     key={path}
@@ -1041,14 +1063,13 @@ export function App({
                     backgroundColor={active ? theme.tabActive : theme.tabInactive}
                     onMouseDown={() => {
                       const current = buffers.current.get(path)
-                      setActivePath(path)
-                      setMountText(current?.current ?? "")
+                      activateEditorPath(path, current?.current ?? "")
                       setFocus("editor")
                     }}
                     onMouseOver={() => point("pointer")}
                     onMouseOut={() => point("default")}
                   >
-                    {active ? <text fg={theme.tabMark}>▎</text> : <text fg={theme.tabInactive}> </text>}
+                    {active ? <text fg={tabMarkFg}>▎</text> : <text fg={theme.tabInactive}> </text>}
                     <text fg={tabLabelFg}>{` ${name}`}</text>
                     {buffer?.dirty ? <text fg={theme.dirty}> ●</text> : null}
                     <text fg={tabLabelFg}> </text>
@@ -1064,22 +1085,25 @@ export function App({
                     { mode: "source" as const, label: " Source ", active: !showingPreview },
                     { mode: "preview" as const, label: " Preview ", active: showingPreview },
                   ] as const
-                ).map((segment) => (
-                  <box
-                    key={segment.mode}
-                    height={1}
-                    flexShrink={0}
-                    backgroundColor={segment.active ? theme.listActive : theme.tabInactive}
-                    onMouseDown={(event) => {
-                      event.stopPropagation()
-                      enterDocumentMode(segment.mode)
-                    }}
-                    onMouseOver={() => point("pointer")}
-                    onMouseOut={() => point("default")}
-                  >
-                    <text fg={segment.active ? theme.brand : theme.listDim}>{segment.label}</text>
-                  </box>
-                ))}
+                ).map((segment) => {
+                  const colors = documentModeSegment(theme, showingPreview, segment.active)
+                  return (
+                    <box
+                      key={segment.mode}
+                      height={1}
+                      flexShrink={0}
+                      backgroundColor={colors.bg}
+                      onMouseDown={(event) => {
+                        event.stopPropagation()
+                        enterDocumentMode(segment.mode)
+                      }}
+                      onMouseOver={() => point("pointer")}
+                      onMouseOut={() => point("default")}
+                    >
+                      <text fg={colors.fg}>{segment.label}</text>
+                    </box>
+                  )
+                })}
               </box>
             ) : null}
           </box>
@@ -1225,7 +1249,7 @@ function MarkdownPreview({
   onFocus: () => void
 }) {
   const renderer = useRenderer()
-  const style = useMemo(() => getSyntaxStyle(theme, renderer.nativeScene), [theme, renderer])
+  const style = useMemo(() => getPreviewSyntaxStyle(theme, renderer.nativeScene), [theme, renderer])
   const hover = useHover("pointer")
   return (
     <scrollbox
@@ -1234,9 +1258,9 @@ function MarkdownPreview({
       focused={focused}
       focusable
       scrollY
-      rootOptions={{ backgroundColor: theme.editorBg }}
-      viewportOptions={{ backgroundColor: theme.editorBg }}
-      contentOptions={{ backgroundColor: theme.editorBg, flexDirection: "column", padding: 1 }}
+      rootOptions={{ backgroundColor: theme.previewBg }}
+      viewportOptions={{ backgroundColor: theme.previewBg }}
+      contentOptions={{ backgroundColor: theme.previewBg, flexDirection: "column", padding: 1 }}
       verticalScrollbarOptions={{ trackOptions: { backgroundColor: theme.activityBg, foregroundColor: theme.listDim } }}
       onMouseDown={() => onFocus()}
       {...hover}
@@ -1246,8 +1270,8 @@ function MarkdownPreview({
         syntaxStyle={style}
         conceal
         concealCode={false}
-        fg={theme.editorText}
-        bg={theme.editorBg}
+        fg={theme.previewFg}
+        bg={theme.previewBg}
         width={Math.max(8, width - 4)}
       />
     </scrollbox>
