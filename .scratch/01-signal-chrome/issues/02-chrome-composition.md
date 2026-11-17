@@ -1,7 +1,7 @@
 # 02: Chrome composition polish
 
 **Base:** spec/01
-**Status:** claimed
+**Status:** done
 **Blocked by:** 01
 **Surfaces:** terminal-code
 
@@ -23,3 +23,5 @@ A demoable Signal shell where view switching and focus states feel designed end-
 - `bun test` and `bun check` pass
 
 ## Comments
+
+- Landed into `spec/01` via https://github.com/ahmed-zhran/terminal-code/pull/2
