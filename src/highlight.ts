@@ -150,14 +150,12 @@ function runningTest(): boolean {
   return process.argv.some((part) => part === "test" || part.endsWith(".test.ts") || part.endsWith(".test.tsx"))
 }
 
-export function getSyntaxStyle(theme: Theme, owner: NativeResourceOwner): SyntaxStyle {
-  const cached = styles.get(theme.name)
-  if (cached) return cached
+function buildSyntaxStyle(theme: Theme, bodyFg: string, owner: NativeResourceOwner): SyntaxStyle {
   const palette = PALETTES[theme.name] ?? DARK
-  const created = SyntaxStyle.fromStyles(
+  return SyntaxStyle.fromStyles(
     {
-      default: { fg: theme.editorText },
-      text: { fg: theme.editorText },
+      default: { fg: bodyFg },
+      text: { fg: bodyFg },
       comment: { fg: palette.comment, italic: true },
       keyword: { fg: palette.keyword },
       string: { fg: palette.string },
@@ -176,8 +174,8 @@ export function getSyntaxStyle(theme: Theme, owner: NativeResourceOwner): Syntax
       "markup.heading.1": { fg: theme.brand, bold: true },
       "markup.heading.2": { fg: theme.accent, bold: true },
       "markup.heading.3": { fg: theme.titleFg, bold: true },
-      "markup.strong": { fg: theme.editorText, bold: true },
-      "markup.italic": { fg: theme.editorText, italic: true },
+      "markup.strong": { fg: bodyFg, bold: true },
+      "markup.italic": { fg: bodyFg, italic: true },
       "markup.strikethrough": { fg: theme.listDim, dim: true },
       "markup.raw": { fg: palette.string },
       "markup.quote": { fg: theme.listDim, italic: true },
@@ -189,7 +187,23 @@ export function getSyntaxStyle(theme: Theme, owner: NativeResourceOwner): Syntax
     },
     owner,
   )
+}
+
+export function getSyntaxStyle(theme: Theme, owner: NativeResourceOwner): SyntaxStyle {
+  const cached = styles.get(theme.name)
+  if (cached) return cached
+  const created = buildSyntaxStyle(theme, theme.editorText, owner)
   styles.set(theme.name, created)
+  return created
+}
+
+/** Markdown Preview body styles: content-first `previewFg`, same heading accents. */
+export function getPreviewSyntaxStyle(theme: Theme, owner: NativeResourceOwner): SyntaxStyle {
+  const key = `${theme.name}:preview`
+  const cached = styles.get(key)
+  if (cached) return cached
+  const created = buildSyntaxStyle(theme, theme.previewFg, owner)
+  styles.set(key, created)
   return created
 }
 
