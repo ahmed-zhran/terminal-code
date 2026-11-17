@@ -186,28 +186,39 @@ export function App({
     setBranchMenu(false)
   }
 
+  function applyDocumentMode(path: string, next: boolean, current: boolean): boolean {
+    if (next === current) return current
+    if (!next) {
+      const buffer = buffers.current.get(path)
+      if (buffer && !buffer.blocked) {
+        setMountText(buffer.current)
+        setEditorGeneration((generation) => generation + 1)
+      }
+    } else if (editorRef.current) {
+      const buffer = buffers.current.get(path)
+      if (buffer && !buffer.blocked) buffer.current = editorRef.current.plainText
+    }
+    setNotice(next ? "Markdown preview" : "Markdown source")
+    setFocus("editor")
+    return next
+  }
+
+  function enterDocumentMode(mode: "source" | "preview") {
+    const path = activeRef.current
+    if (!path || !isMarkdownPath(path)) {
+      setNotice("Open a Markdown file to preview it.")
+      return
+    }
+    setPreviewMode((current) => applyDocumentMode(path, mode === "preview", current))
+  }
+
   function toggleMarkdownPreview() {
     const path = activeRef.current
     if (!path || !isMarkdownPath(path)) {
       setNotice("Open a Markdown file to preview it.")
       return
     }
-    setPreviewMode((value) => {
-      const next = !value
-      if (!next) {
-        const buffer = buffers.current.get(path)
-        if (buffer && !buffer.blocked) {
-          setMountText(buffer.current)
-          setEditorGeneration((generation) => generation + 1)
-        }
-      } else if (editorRef.current) {
-        const buffer = buffers.current.get(path)
-        if (buffer && !buffer.blocked) buffer.current = editorRef.current.plainText
-      }
-      setNotice(next ? "Markdown preview" : "Markdown source")
-      setFocus("editor")
-      return next
-    })
+    setPreviewMode((current) => applyDocumentMode(path, !current, current))
   }
 
   function scheduleHighlight() {
@@ -1040,7 +1051,6 @@ export function App({
                     {active ? <text fg={theme.tabMark}>▎</text> : <text fg={theme.tabInactive}> </text>}
                     <text fg={tabLabelFg}>{` ${name}`}</text>
                     {buffer?.dirty ? <text fg={theme.dirty}> ●</text> : null}
-                    {active && showingPreview ? <text fg={theme.tabFg}> ▸</text> : null}
                     <text fg={tabLabelFg}> </text>
                   </box>
                 )
@@ -1048,18 +1058,28 @@ export function App({
             )}
             <box flexGrow={1} backgroundColor={theme.tabBar} />
             {markdownActive ? (
-              <box
-                height={1}
-                flexShrink={0}
-                backgroundColor={showingPreview ? theme.listActive : theme.tabInactive}
-                onMouseDown={(event) => {
-                  event.stopPropagation()
-                  toggleMarkdownPreview()
-                }}
-                onMouseOver={() => point("pointer")}
-                onMouseOut={() => point("default")}
-              >
-                <text fg={showingPreview ? theme.brand : theme.listDim}>{showingPreview ? " Preview " : " Source "}</text>
+              <box height={1} flexShrink={0} flexDirection="row">
+                {(
+                  [
+                    { mode: "source" as const, label: " Source ", active: !showingPreview },
+                    { mode: "preview" as const, label: " Preview ", active: showingPreview },
+                  ] as const
+                ).map((segment) => (
+                  <box
+                    key={segment.mode}
+                    height={1}
+                    flexShrink={0}
+                    backgroundColor={segment.active ? theme.listActive : theme.tabInactive}
+                    onMouseDown={(event) => {
+                      event.stopPropagation()
+                      enterDocumentMode(segment.mode)
+                    }}
+                    onMouseOver={() => point("pointer")}
+                    onMouseOut={() => point("default")}
+                  >
+                    <text fg={segment.active ? theme.brand : theme.listDim}>{segment.label}</text>
+                  </box>
+                ))}
               </box>
             ) : null}
           </box>

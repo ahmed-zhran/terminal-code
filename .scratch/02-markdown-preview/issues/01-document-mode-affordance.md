@@ -1,7 +1,7 @@
 # 01: Document-mode affordance
 
 **Base:** spec/02
-**Status:** ready-for-agent
+**Status:** claimed
 **Blocked by:** none
 **Surfaces:** terminal-code
 
