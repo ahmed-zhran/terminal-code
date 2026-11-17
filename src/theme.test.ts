@@ -80,10 +80,58 @@ test("Signal editor text contrast beats inactive tab and status muted text", () 
   expect(editor).toBeGreaterThanOrEqual(10)
 })
 
+test("Signal active activity-rail mark is stronger than inactive", () => {
+  const signal = themes.signal
+  const active = contrast(signal.brand, signal.activityActive)
+  const inactive = contrast(signal.activityMuted, signal.activityBg)
+  expect(active).toBeGreaterThanOrEqual(7)
+  expect(active).toBeGreaterThanOrEqual(inactive * 3)
+  expect(luminance(signal.activityActive)).toBeGreaterThan(luminance(signal.activityBg))
+})
+
+test("Signal sidebar title sits above the divider cue", () => {
+  const { sidebarBg, titleFg, divider } = themes.signal
+  const title = contrast(titleFg, sidebarBg)
+  const dividerCue = contrast(divider, sidebarBg)
+  expect(isMintTeal(titleFg)).toBe(true)
+  expect(isMintTeal(divider)).toBe(false)
+  expect(title).toBeGreaterThan(dividerCue * 4)
+  expect(luminance(divider)).toBeGreaterThan(luminance(sidebarBg))
+})
+
+test("Signal active tab reads clearer than inactive; dirty mark stays visible", () => {
+  const signal = themes.signal
+  const active = contrast(signal.tabFg, signal.tabActive)
+  const inactive = contrast(signal.tabInactiveFg, signal.tabInactive)
+  expect(active).toBeGreaterThan(inactive * 2)
+  expect(luminance(signal.tabActive)).toBeGreaterThan(luminance(signal.tabInactive))
+  expect(contrast(signal.dirty, signal.tabActive)).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(signal.dirty, signal.tabInactive)).toBeGreaterThanOrEqual(4.5)
+})
+
+test("Signal status bar stays secondary to editor content", () => {
+  const signal = themes.signal
+  const editor = contrast(signal.editorText, signal.editorBg)
+  expect(editor).toBeGreaterThan(contrast(signal.statusFg, signal.statusBg))
+  expect(editor).toBeGreaterThan(contrast(signal.statusMuted, signal.statusBg))
+  expect(luminance(signal.statusBg)).toBeLessThan(luminance(signal.editorBg))
+})
+
+test("Signal empty states share title and content language", () => {
+  const signal = themes.signal
+  expect(signal.emptyFg).toBe(signal.editorText)
+  expect(signal.emptyDim).toBe(signal.listDim)
+  expect(isMintTeal(signal.brand)).toBe(true)
+  expect(contrast(signal.emptyFg, signal.editorBg)).toBeGreaterThan(
+    contrast(signal.emptyDim, signal.editorBg),
+  )
+})
+
 test("every theme exposes the same chrome role tokens (Signal owns the depth ladder)", () => {
   for (const name of themeOrder) {
     const theme: Theme = themes[name]
     expect(theme.activityBg).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(theme.activityMuted).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.sidebarBg).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.editorBg).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.tabBar).toMatch(/^#[0-9A-Fa-f]{6}$/)
@@ -91,6 +139,7 @@ test("every theme exposes the same chrome role tokens (Signal owns the depth lad
     expect(theme.brand).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.titleFg).toMatch(/^#[0-9A-Fa-f]{6}$/)
     expect(theme.editorText).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(theme.dirty).toMatch(/^#[0-9A-Fa-f]{6}$/)
   }
 })
 
