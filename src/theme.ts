@@ -36,6 +36,9 @@ export type Theme = {
   statusMuted: string
   divider: string
   editorText: string
+  previewBg: string
+  previewFg: string
+  previewChromeFg: string
   cursor: string
   selection: string
   dirty: string
@@ -53,8 +56,24 @@ export type Theme = {
 }
 
 function theme(
-  partial: Omit<Theme, "brand" | "tabMark" | "statusMuted" | "activityMuted" | "emptyFg" | "emptyDim"> &
-    Partial<Pick<Theme, "brand" | "tabMark" | "statusMuted" | "activityMuted" | "emptyFg" | "emptyDim">>,
+  partial: Omit<
+    Theme,
+    "brand" | "tabMark" | "statusMuted" | "activityMuted" | "emptyFg" | "emptyDim" | "previewBg" | "previewFg" | "previewChromeFg"
+  > &
+    Partial<
+      Pick<
+        Theme,
+        | "brand"
+        | "tabMark"
+        | "statusMuted"
+        | "activityMuted"
+        | "emptyFg"
+        | "emptyDim"
+        | "previewBg"
+        | "previewFg"
+        | "previewChromeFg"
+      >
+    >,
 ): Theme {
   return {
     ...partial,
@@ -64,6 +83,9 @@ function theme(
     activityMuted: partial.activityMuted ?? partial.listDim,
     emptyFg: partial.emptyFg ?? partial.listFg,
     emptyDim: partial.emptyDim ?? partial.listDim,
+    previewBg: partial.previewBg ?? partial.editorBg,
+    previewFg: partial.previewFg ?? partial.editorText,
+    previewChromeFg: partial.previewChromeFg ?? partial.listDim,
   }
 }
 
@@ -98,6 +120,10 @@ export const themes: Record<ThemeName, Theme> = {
     statusMuted: "#6F9080",
     divider: "#182430",
     editorText: "#E8EEF5",
+    // Preview is the content peak: body contrast leads; chrome labels stay muted.
+    previewBg: "#141C26",
+    previewFg: "#FFFFFF",
+    previewChromeFg: "#5A6B7D",
     cursor: "#5EEAD4",
     selection: "#1B3A48",
     dirty: "#F0C674",
@@ -391,4 +417,22 @@ export const themeOrder: ThemeName[] = [
 
 export function isThemeName(value: string): value is ThemeName {
   return value in themes
+}
+
+/** Source/Preview control colors: loud in Source chrome, quiet while Preview body leads. */
+export function documentModeSegment(
+  theme: Theme,
+  previewActive: boolean,
+  segmentActive: boolean,
+): { bg: string; fg: string } {
+  if (previewActive) {
+    return {
+      bg: segmentActive ? theme.tabInactive : theme.tabBar,
+      fg: theme.previewChromeFg,
+    }
+  }
+  return {
+    bg: segmentActive ? theme.listActive : theme.tabInactive,
+    fg: segmentActive ? theme.brand : theme.listDim,
+  }
 }
