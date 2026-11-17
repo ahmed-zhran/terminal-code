@@ -1,7 +1,7 @@
 # 02: Preview content-first layout
 
 **Base:** spec/02
-**Status:** claimed
+**Status:** done
 **Blocked by:** 01
 **Surfaces:** terminal-code
 
@@ -24,3 +24,7 @@ Preview feels like a first-class document mode, not a bolted-on panel, consisten
 ## Comments
 
 - Document mode policy: **reset to Source** when the active path changes (leave/return a Markdown tab). Preview is not sticky across tabs; returning always opens Source.
+
+## Comments
+
+- Landed into `spec/02` via https://github.com/ahmed-zhran/terminal-code/pull/5
