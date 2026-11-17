@@ -1,7 +1,7 @@
 # 01: Document-mode affordance
 
 **Base:** spec/02
-**Status:** claimed
+**Status:** done
 **Blocked by:** none
 **Surfaces:** terminal-code
 
@@ -22,3 +22,5 @@ A Markdown file can be switched between Source and Preview by click or chord wit
 - `bun test` and `bun check` pass
 
 ## Comments
+
+Landed into `spec/02` via https://github.com/ahmed-zhran/terminal-code/pull/4.
